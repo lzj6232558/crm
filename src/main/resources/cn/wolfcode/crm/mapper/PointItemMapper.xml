@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.PointItemMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.PointItem" >
+    <id column="id" property="id" />
+    <result column="op" property="op" />
+    <result column="changeNum" property="changeNum" />
+    <result column="opTime" property="opTime" />
+    <result column="remark" property="remark" />
+    <association property="vip" column="vip_id" javaType="cn.wolfcode.crm.domain.Vip" columnPrefix="v_">
+      <id column="id" property="id"/>
+      <result column="vip_number" property="vipNumber"/>
+      <result column="vip_name" property="vipName"/>
+      <result column="vip_phone" property="vipPhone"/>
+      <result column="current_money" property="currentMoney"/>
+      <result column="totalpoint" property="totalpoint"/>
+      <result column="currentpoint" property="currentpoint"/>
+      <result column="amount_money" property="amountMoney"/>
+    </association>
+    <association property="card" column="vipcard_id" javaType="cn.wolfcode.crm.domain.Vipcard" columnPrefix="vc_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="inputUser" column="employee_id" javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="e_">
+      <id column="id" property="id"/>
+      <result column="username" property="username"/>
+    </association>
+  </resultMap>
+
+  <sql id="sql_conditions">
+    <where>
+      <if test="keyword != null and keyword !=''">
+        and (v.vip_number like concat('%',#{keyword},'%') or v.vip_phone like concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+
+  <delete id="deleteByPrimaryKey" >
+    delete from `pointitem`
+    where id = #{id}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into `pointitem` (vip_id, vipcard_id, employee_id, op, changeNum, opTime, remark
+      )
+    values (#{vip.id}, #{card.id}, #{inputUser.id}, #{op}, #{changeNum}, #{opTime}, #{remark}
+      )
+  </insert>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap"  >
+    select p.id, v.id v_id,
+    v.vip_number v_vip_number,
+    v.vip_name v_vip_name,
+    v.vip_phone v_vip_phone,
+    v.current_money v_current_money,
+    v.currentpoint v_currentpoint,
+    v.totalpoint v_totalpoint,
+    v.amount_money v_amount_money,
+    vc.id vc_id,
+    vc.name vc_name,
+    e.id e_id,
+    e.username e_username,
+    p.op, p.changeNum,
+    p.opTime, p.remark
+    from `pointitem` p join vip v on p.vip_id = v.id join vipcard vc on vc.id = p.vipcard_id
+    join employee e on p.employee_id=e.id
+    where p.id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select p.id, v.id v_id,
+    v.vip_number v_vip_number,
+    v.vip_name v_vip_name,
+    v.vip_phone v_vip_phone,
+    v.current_money v_current_money,
+    v.currentpoint v_currentpoint,
+    v.totalpoint v_totalpoint,
+    v.amount_money v_amount_money,
+    vc.id vc_id,
+    vc.name vc_name,
+    e.username e_username,
+    p.op, p.changeNum,
+    p.opTime, p.remark
+    from `pointitem` p join vip v on p.vip_id = v.id join vipcard vc on vc.id = p.vipcard_id
+    join employee e on p.employee_id=e.id
+  </select>
+  <select id="queryForCount" resultType="int">
+   select count(p.id) from pointItem p join vip v
+   <include refid="sql_conditions"/>
+  </select>
+  <select id="queryForList" resultMap="BaseResultMap">
+     select p.id,
+    v.id v_id,
+    v.vip_number v_vip_number,
+    v.vip_name v_vip_name,
+    v.vip_phone v_vip_phone,
+    v.current_money v_current_money,
+    v.currentpoint v_currentpoint,
+    v.totalpoint v_totalpoint,
+    v.amount_money v_amount_money,
+    vc.id vc_id,
+    vc.name vc_name,
+    e.username e_username,
+    p.op, p.changeNum,
+    p.opTime, p.remark
+    from `pointitem` p join vip v on p.vip_id = v.id join vipcard vc on vc.id = p.vipcard_id
+    join employee e on p.employee_id=e.id
+    <include refid="sql_conditions"/>
+    limit #{beginIndex},#{rows}
+  </select>
+</mapper>

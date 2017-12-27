@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.DepotMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Depot" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="sn" property="sn" />
+    <result column="linkman" property="linkman" />
+    <result column="tel" property="tel" />
+    <result column="location" property="location" />
+    <result column="inputtime" property="inputtime" />
+    <result column="state" property="state" />
+  </resultMap>
+
+  <sql id="conditions_sql">
+    <where>
+      <if test="keyword!=null and keyword!=''">
+        and (name like concat('%',#{keyword},'%')
+        or tel like concat('%',#{keyword},'%')
+        or location like concat('%',#{keyword},'%')
+        )
+      </if>
+    </where>
+  </sql>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `depot`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Depot" useGeneratedKeys="true" keyProperty="id" >
+    insert into `depot` (name, sn, linkman, tel, location, inputtime, state)
+    values (#{name}, #{sn}, #{linkman}, #{tel}, #{location}, now(), #{state})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Depot" >
+    update `depot`
+    set name = #{name},
+      sn = #{sn},
+      linkman = #{linkman},
+      tel = #{tel},
+      location = #{location},
+      inputtime = now(),
+    where id = #{id}
+  </update>
+  <update id="changeState">
+    update depot set state = state^1 where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, sn, linkman, tel, location, inputtime, state
+    from `depot`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, sn, linkman, tel, location, inputtime, state
+    from `depot`
+  </select>
+  <select id="queryCount" resultType="java.lang.Integer">
+    select count(id)
+    from `depot`
+    <include refid="conditions_sql"></include>
+  </select>
+  <select id="queryList" resultType="cn.wolfcode.crm.domain.Depot">
+    select id, name, sn, linkman, tel, location, inputtime, state
+    from `depot`
+    <include refid="conditions_sql"></include>
+    limit #{beginIndex},#{rows}
+  </select>
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.AdjustdepotMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Adjustdepot" >
+    <id column="id" property="id" />
+    <result column="oldinnumber" property="oldinnumber" />
+    <result column="newinnumber" property="newinnumber" />
+    <result column="oldoutnumber" property="oldoutnumber" />
+    <result column="newoutnumber" property="newoutnumber" />
+    <result column="inputtime" property="inputtime" />
+    <result column="remark" property="remark" />
+    <result column="differ" property="differ"></result>
+    <association property="indepot" javaType="Depot" columnPrefix="indepot_">
+      <id column="id" property="id"></id>
+      <result column="name" property="name"></result>
+    </association>
+    <association property="outdepot" javaType="Depot" columnPrefix="outdepot_">
+      <id column="id" property="id"></id>
+      <result column="name" property="name"></result>
+    </association>
+    <association property="inproduct" javaType="Product" columnPrefix="inp_">
+        <id column="id" property="id"></id>
+        <result column="sn" property="sn"></result>
+        <result column="name" property="name"></result>
+    </association>
+    <association property="outproduct" javaType="Product" columnPrefix="outp_">
+      <id column="id" property="id"></id>
+      <result column="sn" property="sn"></result>
+      <result column="name" property="name"></result>
+    </association>
+    <association property="inputuser" javaType="Employee" columnPrefix="e_">
+      <id column="id" property="id"></id>
+      <result column="username" property="username"></result>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `adjustdepot`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Adjustdepot" useGeneratedKeys="true" keyProperty="id" >
+    insert into `adjustdepot` (inproduct_id, indepot_id, oldinnumber, newinnumber, oldoutnumber, 
+      newoutnumber, inputuser_id, inputtime, remark, outproduct_id, outdepot_id
+      )
+    values (#{inproduct.id}, #{indepot.id}, #{oldinnumber}, #{newinnumber}, #{oldoutnumber},
+      #{newoutnumber}, #{inputuser.id}, now(), #{remark}, #{outproduct.id}, #{outdepot.id}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Adjustdepot" >
+    update `adjustdepot`
+    set inproduct_id = #{inproduct.id},
+      indepot_id = #{indepot.id},
+      oldinnumber = #{oldinnumber},
+      newinnumber = #{newinnumber},
+      oldoutnumber = #{oldoutnumber},
+      newoutnumber = #{newoutnumber},
+      inputuser_id = #{inputuser.id},
+      inputtime = #{inputtime},
+      remark = #{remark},
+      outproduct_id = #{outproduct.id},
+      outdepot_id = #{outdepot.id}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, inproduct_id, indepot_id, oldinnumber, newinnumber, oldoutnumber, newoutnumber, 
+    inputuser_id, inputtime, remark, outproduct_id, outdepot_id
+    from `adjustdepot`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, inproduct_id, indepot_id, oldinnumber, newinnumber, oldoutnumber, newoutnumber, 
+    inputuser_id, inputtime, remark, outproduct_id, outdepot_id
+    from `adjustdepot`
+  </select>
+    <select id="queryList" resultMap="BaseResultMap">
+      SELECT
+      inp.id inp_id,
+      inp.`sn` inp_sn,inp.`name` inp_name,
+      outp.id outp_id,
+      outp.`sn` outp_sn,outp.`name` outp_name,
+      ad.id,
+      ad.`oldoutnumber` - ad.`newoutnumber` differ,
+      outdepot.id outdepot_id,
+      outdepot.`name` outdepot_name,
+      ad.`oldoutnumber`,ad.`newoutnumber`,
+      indepot.id indepot_id,
+      indepot.name indepot_name,
+      ad.`oldinnumber`,ad.`newinnumber`,
+      e.id e_id,
+      e.`username` e_username,
+      ad.`inputtime`,ad.`remark`
+      FROM `adjustdepot` ad
+      JOIN `employee` e ON e.`id` = ad.`inputuser_id`
+      JOIN `product` inp ON inp.`id` = ad.`inproduct_id`
+      JOIN `product` outp ON outp.`id` = ad.`outproduct_id`
+      JOIN `depot` indepot ON indepot.`id` = ad.`indepot_id`
+      JOIN `depot` outdepot ON  outdepot.`id` = ad.`outdepot_id`
+      limit #{beginIndex},#{rows}
+    </select>
+  <select id="queryCount" resultType="java.lang.Integer">
+      SELECT
+      count(ad.id)
+      FROM `adjustdepot` ad
+      JOIN `employee` e ON e.`id` = ad.`inputuser_id`
+      JOIN `product` inp ON inp.`id` = ad.`inproduct_id`
+      JOIN `product` outp ON outp.`id` = ad.`outproduct_id`
+      JOIN `depot` indepot ON indepot.`id` = ad.`indepot_id`
+      JOIN `depot` outdepot ON  outdepot.`id` = ad.`outdepot_id`
+  </select>
+</mapper>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.VipMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Vip">
+    <id column="id" property="id"/>
+    <result column="vip_number" property="vipNumber"/>
+    <result column="vip_password" property="vipPassword"/>
+    <result column="vip_name" property="vipName"/>
+    <result column="vip_phone" property="vipPhone"/>
+    <result column="gender" property="gender"/>
+    <result column="amount_money" property="amountMoney"/>
+    <result column="current_money" property="currentMoney"/>
+    <result column="email" property="email"/>
+    <result column="inputTime" property="inputTime"/>
+    <result column="currentpoint" property="currentpoint"/>
+    <result column="totalpoint" property="totalpoint"/>
+    <result column="source" property="source"/>
+    <result column="vipCardState" property="vipCardState"/>
+      <association property="vipcard" javaType="cn.wolfcode.crm.domain.Vipcard" column="totalpoint" columnPrefix="vc_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+      <result column="discount" property="discount"/>
+    </association>
+      <association property="employee" javaType="cn.wolfcode.crm.domain.Employee" column="employee_id" columnPrefix="employee_">
+          <id column="id" property="id"/>
+          <result column="username" property="username"/>
+      </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `vip`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Vip" useGeneratedKeys="true" keyProperty="id" >
+    insert into `vip` (vip_number, vip_password, vip_name, vip_phone, gender, amount_money,
+      current_money, email, inputTime, vipcard_id, currentpoint, totalpoint,source,vipCardState,employee_id
+      )
+    values (#{vipNumber}, #{vipPassword}, #{vipName}, #{vipPhone}, #{gender}, #{amountMoney},
+      #{currentMoney}, #{email}, #{inputTime}, #{vipcard.id}, #{currentpoint}, #{totalpoint}
+            ,#{source},#{vipCardState},#{employee.id}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Vip" >
+    update `vip`
+    set vip_number = #{vipNumber},
+      vip_name = #{vipName},
+      vip_phone = #{vipPhone},
+      gender = #{gender},
+      email = #{email},
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, vip_number, vip_password, vip_name, vip_phone, gender, amount_money, current_money, 
+    email, inputTime, vipcard_id, currentpoint, totalpoint,vipCardState,source
+    from `vip`
+    where id = #{id}
+  </select>
+  <update id="updateRemainingByVipId">
+    UPDATE `vip`  SET current_money = #{currentMoney},amount_money=#{amountMoney},totalpoint=#{totalpoint},
+      currentpoint=#{currentpoint},vipcard_id=#{vipcard.id}
+      <if test="vipCardState == -1">
+        ,vipCardState=#{vipCardState}
+      </if>
+    where id =#{id}
+  </update>
+    <select id="selectAll" resultMap="BaseResultMap" >
+        select id, vip_number, vip_password, vip_name, vip_phone, gender, amount_money, current_money,
+            email, inputTime, vipcard_id, currentpoint, totalpoint,source,vipCardState
+        from `vip`
+    </select>
+
+  <select id="queryForList" resultMap="BaseResultMap">
+    SELECT v.id,v.vip_number,v.vip_name , v.vip_phone,v.gender,v.amount_money,
+    v.current_money,v.email,v.inputtime,v.vipcard_id,v.currentpoint,v.totalpoint,v.source,v.vipCardState,
+    vc.id vc_id, vc.name vc_name,
+    vc.discount vc_discount,employee.id employee_id,employee.username employee_username
+    FROM vipcard vc RIGHT JOIN vip v ON vc.id =v.vipcard_id
+    LEFT JOIN employee ON v.employee_id=employee.id
+      <include refid="baseSql"/>
+    ORDER BY v.vip_number
+    LIMIT #{beginIndex},#{rows}
+  </select>
+
+  <sql id="baseSql">
+    <where>
+      <if test="keyword != null and keyword !=''">
+        and (v.vip_name like concat('%',#{keyword},'%') OR v.vip_number like concat ('%',#{keyword},'%')
+              or v.vip_phone like concat ('%',#{keyword},'%') )
+      </if>
+      <if test="employeeId > -1 and employeeId != null">
+        and v.employee_id = #{employeeId}
+      </if>
+      <if test="source != null and source != ''">
+        and v.source = #{source}
+      </if>
+      <if test="vipcardId >0">
+        and v.vipcard_id = #{vipcardId}
+      </if>
+      <if test="beginTime != null">
+        and v.inputtime > #{beginTime}
+      </if>
+      <if test="endTime != null">
+        and v.inputtime &lt; #{endTime}
+      </if>
+      <if test="timeFormat != null and timeFormat != '' and formatNum != null ">
+        and (v.inputtime BETWEEN DATE_SUB(NOW(),INTERVAL #{formatNum} ${timeFormat}) AND NOW())
+      </if>
+    </where>
+  </sql>
+
+  <select id="queryForCount" resultType="int">
+    SELECT count(id) FROM vip v
+    <include refid="baseSql"/>
+  </select>
+  <!--通过会前台传递的员卡号码获取获取当前会员-->
+  <select id="selectVipByCardNumber" resultMap="BaseResultMap">
+    SELECT v.id,v.vip_number,v.vip_password ,v.vip_name , v.vip_phone,v.gender,v.amount_money,
+      v.current_money,v.email,v.inputtime,v.vipcard_id,v.currentpoint,v.totalpoint,v.source,v.vipCardState,
+      vc.id vc_id, vc.name vc_name FROM vip v JOIN vipcard vc ON v.vipcard_id = vc.id
+    WHERE v.vip_number = #{vipNumber}
+  </select>
+  <update id="updateVipNumber">
+    UPDATE vip SET vip_number=#{vipNumber} where id=#{id}
+  </update>
+
+  <update id="changeState" >
+    UPDATE vip SET vipCardState=vipCardState^1 WHERE id=#{id}
+  </update>
+
+  <select id="getVipCardState" resultType="int">
+    SELECT vipCardState FROM vip WHERE id=#{id}
+  </select>
+  <!--积分清零-->
+  <update id="clearPoint">
+    UPDATE vip SET currentpoint=0 where id=#{id}
+  </update>
+  <!--积分充值/扣除-->
+  <update id="pointRecharge">
+    UPDATE vip SET currentpoint=#{currentpoint},totalpoint=#{totalpoint} where id=#{id}
+  <!--通过会员id更改会员当前积分和总积分-->
+  </update>
+  <update id="renew">
+    update vip set currentpoint=#{currentpoint},totalpoint=#{totalpoint} where id
+  </update>
+    <select id="selectVipByNameOrPhone" resultMap="BaseResultMap">
+      SELECT  id,vip_name
+      FROM vip
+      WHERE (vip_name like concat('%',#{nameOrPhone},'%') or vip_phone  like concat('%',#{nameOrPhone},'%'))
+    </select>
+
+  <select id="checkVipPhone" resultMap="BaseResultMap">
+    select id, vip_number FROM vip WHERE vip_phone=#{phone}
+  </select>
+
+  <update id="editVipPassword">
+    UPDATE vip SET vip_password=#{password} where id=#{id}
+  </update>
+
+  <update id="initPassword">
+    UPDATE vip SET  vip_password=88888888 WHERE id=#{id}
+  </update>
+
+
+  <select id="report" resultType="map">
+    SELECT e.username name , count(v.id) amount
+    FROM vip v LEFT JOIN employee e ON v.employee_id=e.id
+    WHERE v.inputtime BETWEEN DATE_SUB(NOW(),INTERVAL 7 DAY) AND NOW()
+    GROUP BY e.username
+  </select>
+
+
+</mapper>

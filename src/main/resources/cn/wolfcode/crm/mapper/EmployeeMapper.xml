@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.EmployeeMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Employee" >
+    <id column="id" property="id" />
+    <result column="username" property="username" />
+    <result column="realName" property="realname" />
+    <result column="password" property="password" />
+    <result column="tel" property="tel" />
+    <result column="email" property="email" />
+    <result column="inputtime" property="inputtime" />
+    <result column="state" property="state" />
+    <result column="admin" property="admin" />
+    <association property="dept" javaType="cn.wolfcode.crm.domain.Department">
+      <id column="d_id" property="id"/>
+      <result column="d_name" property="name"/>
+      <result column="d_sn" property="sn"/>
+      <result column="d_state" property="state"/>
+    </association>
+    </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `employee`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Employee" useGeneratedKeys="true" keyColumn="id" keyProperty="id" >
+    insert into `employee` (username, realName, password, tel, email, dept_id, inputtime, 
+      state, admin)
+    values (#{username}, #{realname}, #{password}, #{tel}, #{email}, #{dept.id}, #{inputtime},
+      #{state}, #{admin})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Employee" >
+    update `employee`
+    set username = #{username},
+      realName = #{realname},
+      password = #{password},
+      tel = #{tel},
+      email = #{email},
+      dept_id = #{dept.id},
+      inputtime = #{inputtime},
+      admin = #{admin}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, username, realName, password, tel, email, dept_id, inputtime, state, admin
+    from `employee`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    SELECT e.id, e.username, realName, password, tel, email, dept_id, inputtime, e.state, admin,
+      d.id d_id,d.sn d_sn ,d.name d_name ,d.state d_state
+    FROM employee e LEFT JOIN department d ON e.dept_id = d.id
+  </select>
+  <sql id="baseSql">
+    <where>
+      <if test="keyword != null and keyword !=''">
+        and (username like concat('%',#{keyword},'%') or email like concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+
+  <select id="queryForCount" resultType="java.lang.Integer">
+    SELECT count(id) FROM employee
+    <include refid="baseSql" />
+  </select>
+  <select id="queryForList" resultMap="BaseResultMap">
+    SELECT e.id, e.username, realName, password, tel, email, dept_id, inputtime, e.state, admin,
+    d.id d_id,d.sn d_sn ,d.name d_name ,d.state d_state
+    FROM employee e LEFT JOIN department d ON e.dept_id = d.id
+    <include refid="baseSql"></include>
+    LIMIT #{beginIndex},#{rows}
+  </select>
+
+  <update id="changeState">
+    UPDATE employee SET state=state^1 WHERE id=#{id}
+  </update>
+
+  <insert id="insertEmployeeAndRoleRelation">
+    INSERT employee_role (employee_id,role_id) VALUES (#{employee_id},#{role_id})
+  </insert>
+  <delete id="deleteEmployeeAndRoleRelation">
+    DELETE FROM employee_role WHERE employee_id=#{id}
+  </delete>
+  <select id="getRoleIdByEmpId" resultType="long">
+    SELECT role_id FROM employee_role WHERE employee_id=#{id}
+  </select>
+
+  <select id="selectEmployeeByUsername" resultMap="BaseResultMap">
+    select id, username, realName, password, tel, email, dept_id, inputtime, state, admin
+    from `employee`
+    where  username =#{username}
+  </select>
+</mapper>

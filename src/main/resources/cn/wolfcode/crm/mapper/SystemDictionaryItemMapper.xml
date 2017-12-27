@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.SystemDictionaryItemMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.SystemDictionaryItem" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="intro" property="intro" />
+    <association property="systemDictionary" javaType="SystemDictionary" column="parent_id"
+                select="cn.wolfcode.crm.mapper.SystemDictionaryMapper.selectByPrimaryKey"></association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `systemdictionaryitem`
+    where id = #{id}
+  </delete>
+
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.SystemDictionaryItem" useGeneratedKeys="true" keyProperty="id" >
+    insert into `systemdictionaryitem` (parent_id, name, intro)
+    values (#{systemDictionary.id}, #{name}, #{intro})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.SystemDictionaryItem" >
+    update `systemdictionaryitem`
+    set parent_id = #{systemDictionary.id},
+      name = #{name},
+      intro = #{intro}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, parent_id, name, intro
+    from `systemdictionaryitem`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, parent_id, name, intro
+    from `systemdictionaryitem`
+  </select>
+
+  <select id="queryById" resultMap="BaseResultMap">
+    select * from systemdictionaryitem where parent_id=#{id}
+  </select>
+
+
+  <select id="selectItemByParentId" resultMap="BaseResultMap">
+    select * from systemdictionaryitem where parent_id=#{id}
+  </select>
+
+</mapper>

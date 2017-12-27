@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.GiftMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Gift" >
+    <id column="id" property="id" />
+    <result column="sn" property="sn" />
+    <result column="imagePath" property="imagepath" />
+    <result column="name" property="name" />
+    <result column="point" property="point" />
+    <result column="currentNum" property="currentNum" />
+    <result column="totalNum" property="totalNum" />
+    <result column="remark" property="remark" />
+  </resultMap>
+
+  <sql id="sql_conditions">
+    <where>
+      <if test="keyword != null and keyword !=''">
+        and (name like concat('%',#{keyword},'%') or sn like concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+
+  <delete id="deleteByPrimaryKey" >
+    delete from `gift`
+    where id = #{id}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into `gift` (sn, imagePath, name, point, currentNum, totalNum, remark
+      )
+    values (#{sn}, #{imagepath}, #{name}, #{point}, #{currentNum}, #{totalNum}, #{remark}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" >
+    update `gift`
+    set sn = #{sn},
+      imagePath = #{imagepath},
+      name = #{name},
+      point = #{point},
+      currentNum = #{currentNum},
+      totalNum = #{totalNum},
+      remark = #{remark}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" >
+    select id, sn, imagePath, name, point, currentNum, totalNum, remark
+    from `gift`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, sn, imagePath, name, point, currentNum, totalNum, remark
+    from `gift`
+  </select>
+
+  <!--高级查询-->
+  <select id="queryForCount" resultType="int">
+    select count(id) from gift
+    <include refid="sql_conditions"/>
+  </select>
+  <select id="queryForList" resultMap="BaseResultMap">
+    select id, sn, imagepath, name, point, currentNum, totalNum, remark
+    from `gift`
+    <include refid="sql_conditions"/>
+    limit #{beginIndex},#{rows}
+  </select>
+</mapper>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.ProductMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Product">
+    <id column="id" property="id" />
+    <result column="sn" property="sn" />
+    <result column="name" property="name" />
+    <result column="costPrice" property="costprice" />
+    <result column="salePrice" property="saleprice" />
+    <result column="vipPrice" property="vipprice" />
+    <result column="vipDiscount" property="vipdiscount" />
+    <result column="imagePath" property="imagePath" />
+    <result column="remark" property="remark" />
+    <result column="inputTime" property="inputtime" />
+    <result column="state" property="state" />
+    <association property="productstock" javaType="cn.wolfcode.crm.domain.Productstock" columnPrefix="ps_">
+      <id column="id" property="id"/>
+      <result column="storeNumber" property="storenumber"/>
+    </association>
+    <association property="parent" javaType="cn.wolfcode.crm.domain.Producttype" columnPrefix="parent_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="child" javaType="cn.wolfcode.crm.domain.Producttype" columnPrefix="child_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="unit" javaType="cn.wolfcode.crm.domain.Unit" columnPrefix="u_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey">
+    delete from `product`
+    where id = #{id}
+  </delete>
+  <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+    insert into `product` (sn, name, costPrice, salePrice, vipPrice, vipDiscount, 
+     unit_id, remark, parent_id, child_id,inputtime,imagePath)
+    values (#{sn}, #{name}, #{costprice}, #{saleprice}, #{vipprice}, #{vipdiscount}, 
+     #{unit.id}, #{remark}, #{parent.id}, #{child.id},#{inputtime},#{imagePath})
+  </insert>
+  <update id="updateByPrimaryKey">
+    update `product`
+    set sn = #{sn},
+      name = #{name},
+      costPrice = #{costprice},
+      salePrice = #{saleprice},
+      vipPrice = #{vipprice},
+      vipDiscount = #{vipdiscount},
+      unit_id = #{unit.id},
+      remark = #{remark},
+      parent_id = #{parent.id},
+      child_id = #{child.id},
+      inputtime=#{inputtime},
+      imagePath=#{imagePath}
+    where id = #{id}
+  </update>
+  <update id="changeState">
+    update product set state=state^1 where id=#{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, sn, name, costPrice, salePrice, vipPrice, vipDiscount, unit_id,
+    remark, parent_id, child_id,inputtime,imagePath,state
+    from `product`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, sn, name, costPrice, salePrice, vipPrice, vipDiscount, unit_id,
+    remark, parent_id, child_id,inputtime,imagePath,state
+    from `product`
+  </select>
+  <sql id="base_sql">
+    <where>
+      <if test="keyword!=null and keyword!=''">
+        and (p.name like concat('%',#{keyword},'%') or p.sn like concat('%',#{keyword},'%'))
+      </if>
+      <if test="parentId!=null and parentId!=''">
+        and p.parent_id=#{parentId}
+      </if>
+      <if test="childId!=null and childId!=''">
+        and p.child_id=#{childId}
+      </if>
+    </where>
+  </sql>
+  <select id="queryForCount" resultType="int">
+     select count(p.id)
+     from `product` p
+     LEFT JOIN producttype parent on p.parent_id = parent.id
+     LEFT JOIN producttype child on p.child_id=child.id
+     LEFT JOIN unit u on u.id=p.unit_id
+     LEFT JOIN productstock ps ON p.id=ps.product_id
+     <include refid="base_sql"/>
+    </select>
+  <select id="queryForList" resultMap="BaseResultMap">
+    select p.id, p.sn, p.name, costPrice, salePrice, vipPrice, vipDiscount, unit_id,
+    remark, inputtime, imagePath,state,
+    parent.id parent_id,parent.name parent_name,
+    child.id child_id,child.name child_name,
+    u.id u_id,u.name u_name,
+    ps.id ps_id,ps.storeNumber ps_storeNumber
+    from `product` p
+    LEFT JOIN producttype parent on p.parent_id = parent.id
+    LEFT JOIN producttype child on p.child_id=child.id
+    LEFT JOIN unit u on u.id=p.unit_id
+    LEFT JOIN productstock ps ON p.id=ps.product_id
+    <include refid="base_sql"/>
+    limit #{beginIndex},#{rows}
+  </select>
+  <select id="selectByProName" resultType="cn.wolfcode.crm.domain.Product">
+    SELECT  id, name
+    FROM `product`
+    WHERE name like concat('%',#{proName},'%')
+  </select>
+</mapper>

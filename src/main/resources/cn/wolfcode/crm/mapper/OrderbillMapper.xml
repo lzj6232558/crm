@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.OrderbillMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Orderbill" >
+    <id column="id" property="id" />
+    <result column="sn" property="sn" />
+    <result column="totalNumber" property="totalnumber" />
+    <result column="totalAmount" property="totalamount" />
+    <result column="status" property="status" />
+    <result column="auditTime" property="audittime" />
+    <result column="inputTime" property="inputtime" />
+    <result column="vdate" property="vdate" />
+    <association property="inputuser" javaType="Employee" columnPrefix="inputUser_">
+      <id column="id" property="id"></id>
+      <result column="name" property="username"></result>
+    </association>
+
+    <association property="auditor" javaType="Employee" columnPrefix="auditor_">
+      <id column="id" property="id"></id>
+      <result column="name" property="username"></result>
+    </association>
+
+    <association property="supplier" javaType="Supplier" columnPrefix="s_">
+      <id column="id" property="id"></id>
+      <result column="name" property="name"></result>
+    </association>
+
+    <association property="depot" javaType="Depot" columnPrefix="d_">
+      <id column="id" property="id"></id>
+      <result column="name" property="name"></result>
+    </association>
+
+    <association property="product" javaType="Product" columnPrefix="p_">
+      <id column="id" property="id"></id>
+      <result column="name" property="name"></result>
+      <result column="saleprice" property="saleprice"></result>
+    </association>
+
+    <collection property="items" ofType="Orderbillitem" column="id"
+                select="cn.wolfcode.crm.mapper.OrderbillitemMapper.selectByBillId"></collection>
+  </resultMap>
+  <sql id="BaseSql">
+    <where>
+      <if test="keyword!=null and keyword!=''">
+        and (bill.sn like concat('%',#{keyword},'%') or s.name like concat('%',#{keyword},'%')
+        or p.`name` like concat('%',#{keyword},'%') or d.`name` like concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+
+  <sql id="BaseSql2">
+    <where>
+      bill.status = 1
+      <if test="keyword!=null and keyword!=''">
+        and (bill.sn like concat('%',#{keyword},'%') or s.name like concat('%',#{keyword},'%')
+        or p.`name` like concat('%',#{keyword},'%') or d.`name` like concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `orderbill`
+    where id = #{id}
+  </delete>
+  <delete id="deleteRelation">
+    delete from orderbill_product where orderbill_id = #{billId}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Orderbill" useGeneratedKeys="true" keyProperty="id" >
+    insert into `orderbill` (sn, supplier_id, totalNumber, totalAmount, status, auditTime, 
+      inputTime, inputUser_id, auditor_id, vdate,product_id,depot_id)
+    values (#{sn}, #{supplier.id}, #{totalnumber}, #{totalamount}, #{status}, #{audittime},
+      #{inputtime}, #{inputuser.id}, #{auditor.id}, #{vdate},#{product.id},#{depot.id})
+  </insert>
+    <insert id="insertRelation">
+      insert into orderbill_product values(#{billId},#{productId})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Orderbill" >
+    update `orderbill`
+    set sn = #{sn},
+      supplier_id = #{supplier.id},
+      totalNumber = #{totalnumber},
+      totalAmount = #{totalamount},
+      vdate = #{vdate},
+      product_id=#{product.id},
+      depot_id=#{depot.id}
+    where id = #{id}
+  </update>
+  <update id="audit">
+    update orderbill set
+    status = 1,
+    auditor_id = #{auditor.id},
+    auditTime  = #{audittime}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+     SELECT bill.id, bill.sn, bill.supplier_id, bill.totalNumber, bill.totalAmount,
+  bill.status, bill.auditTime,
+	bill.inputTime,
+	bill.vdate,bill.`product_id`,
+    inputUser.id inputUser_id,
+    inputUser.username inputUser_name,
+    auditor.id auditor_id,
+    auditor.username auditor_name,
+    s.id s_id,
+    s.name s_name,
+    p.id p_id,
+    p.`name` p_name,
+    p.saleprice p_saleprice,
+    d.`id` d_id,
+    d.`name` d_name
+    FROM `orderbill` bill
+    JOIN employee inputUser ON bill.inputUser_Id = inputUser.id
+    LEFT JOIN employee auditor ON bill.auditor_id = auditor.id
+    JOIN supplier s ON bill.supplier_id = s.id
+    JOIN `product` p ON p.`id` = bill.product_id
+    JOIN `depot` d ON d.`id` = bill.`depot_id`
+    WHERE bill.id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, sn, supplier_id, totalNumber, totalAmount, status, auditTime, inputTime, 
+    inputUser_id, auditor_id, vdate
+    from `orderbill`
+  </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+     SELECT count(bill.id)
+    FROM `orderbill` bill
+    JOIN employee inputUser ON bill.inputUser_Id = inputUser.id
+    LEFT JOIN employee auditor ON bill.auditor_id = auditor.id
+    JOIN supplier s ON bill.supplier_id = s.id
+    JOIN `product` p ON p.`id` = bill.product_id
+    JOIN `depot` d ON d.`id` = bill.`depot_id`
+    <include refid="BaseSql"></include>
+    </select>
+  <select id="queryList" resultMap="BaseResultMap">
+     SELECT bill.id, bill.sn, bill.supplier_id, bill.totalNumber, bill.totalAmount,
+  bill.status, bill.auditTime,
+	bill.inputTime,
+	bill.vdate,bill.`product_id`,
+    inputUser.id inputUser_id,
+    inputUser.username inputUser_name,
+    auditor.id auditor_id,
+    auditor.username auditor_name,
+    s.id s_id,
+    s.name s_name,
+    p.id p_id,
+    p.`name` p_name,
+    p.saleprice p_saleprice,
+    d.`id` d_id,
+    d.`name` d_name
+    FROM `orderbill` bill
+    JOIN employee inputUser ON bill.inputUser_Id = inputUser.id
+    LEFT JOIN employee auditor ON bill.auditor_id = auditor.id
+    JOIN supplier s ON bill.supplier_id = s.id
+    JOIN `product` p ON p.`id` = bill.product_id
+    JOIN `depot` d ON d.`id` = bill.`depot_id`
+    <include refid="BaseSql"></include>
+    limit #{beginIndex},#{rows}
+  </select>
+  <select id="queryReturnbillCount" resultType="java.lang.Integer">
+    SELECT count(bill.id)
+    FROM `orderbill` bill
+    JOIN employee inputUser ON bill.inputUser_Id = inputUser.id
+    LEFT JOIN employee auditor ON bill.auditor_id = auditor.id
+    JOIN supplier s ON bill.supplier_id = s.id
+    JOIN `product` p ON p.`id` = bill.product_id
+    JOIN `depot` d ON d.`id` = bill.`depot_id`
+      <include refid="BaseSql2"></include>
+  </select>
+  <select id="queryReturnbillList" resultMap="BaseResultMap">
+     SELECT bill.id, bill.sn, bill.supplier_id, bill.totalNumber, bill.totalAmount,
+  bill.status, bill.auditTime,
+	bill.inputTime,
+	bill.vdate,bill.`product_id`,
+    inputUser.id inputUser_id,
+    inputUser.username inputUser_name,
+    auditor.id auditor_id,
+    auditor.username auditor_name,
+    s.id s_id,
+    s.name s_name,
+    p.id p_id,
+    p.`name` p_name,
+    p.saleprice p_saleprice,
+    d.`id` d_id,
+    d.`name` d_name
+    FROM `orderbill` bill
+    JOIN employee inputUser ON bill.inputUser_Id = inputUser.id
+    LEFT JOIN employee auditor ON bill.auditor_id = auditor.id
+    JOIN supplier s ON bill.supplier_id = s.id
+    JOIN `product` p ON p.`id` = bill.product_id
+    JOIN `depot` d ON d.`id` = bill.`depot_id`
+    <include refid="BaseSql2"></include>
+    limit #{beginIndex},#{rows}
+  </select>
+</mapper>

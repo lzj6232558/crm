@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.ProducttypeMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Producttype">
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="parent_id" property="parentId" />
+    <collection property="list" column="product_id"  ofType="Product" select="cn.wolfcode.crm.mapper.ProductMapper.selectByPrimaryKey"></collection>
+  </resultMap>
+  <delete id="deleteByPrimaryKey">
+    delete from `producttype`
+    where id = #{id}
+  </delete>
+  <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+    insert into `producttype` (name, parent_id)
+    values (#{name}, #{parentId})
+  </insert>
+  <update id="updateByPrimaryKey">
+    update `producttype`
+    set name = #{name},
+    parent_id = #{parentId}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, name, parent_id
+    from `producttype`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, name, parent_id
+    from `producttype`
+  </select>
+  <select id="selectParentClassify" resultMap="BaseResultMap">
+    select id,name,parent_id
+    from producttype
+    where parent_id is NULL
+  </select>
+
+
+  <select id="selectChildClassify" resultMap="BaseResultMap">
+    select id,name,parent_id
+    from producttype
+    where parent_id is not NULL and parent_id=#{parentId}
+  </select>
+
+  <select id="selectPrductByTypeNumber" resultMap="BaseResultMap">
+    select * from producttype where id=#{id}
+  </select>
+
+  <select id="selectAllTwoType" resultMap="BaseResultMap">
+    select * FROM producttype where product_id  IS not NULL ;
+  </select>
+
+</mapper>

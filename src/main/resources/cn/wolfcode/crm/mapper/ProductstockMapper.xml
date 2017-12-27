@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ProductstockMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Productstock" >
+    <id column="id" property="id" />
+    <result column="price" property="price" />
+    <result column="storeNumber" property="storenumber" />
+    <result column="amount" property="amount" />
+    <association property="product" javaType="cn.wolfcode.crm.domain.Product" columnPrefix="p_">
+      <id column="id" property="id"></id>
+      <result column="sn" property="sn"></result>
+      <result column="name" property="name"></result>
+      <result column="costPrice" property="costprice"></result>
+      <result column="salePrice" property="saleprice"></result>
+    </association>
+    <association property="depot" javaType="cn.wolfcode.crm.domain.Depot" columnPrefix="d_">
+      <id property="id" column="id"></id>
+      <result property="name" column="name"></result>
+    </association>
+  </resultMap>
+
+  <sql id="BaseSql">
+    <where>
+      d.state = 1
+      <if test="keyword!=null and keyword!=''">
+        and (p.`name` like concat('%',#{keyword},'%') or p.`sn` like concat('%',#{keyword},'%'))
+      </if>
+      <if test="maxNumber != null">
+        and ps.storeNumber &lt; #{maxNumber}
+      </if>
+      <if test="depotId != null">
+        and d.`id` = #{depotId}
+      </if>
+    </where>
+  </sql>
+    <select id="queryCount" resultType="java.lang.Integer">
+      SELECT count(ps.id)
+    FROM `productstock` ps
+    JOIN `product` p ON ps.`product_id` = p.`id`
+    JOIN `depot` d ON d.`id` = ps.`depot_id`
+    <include refid="BaseSql"></include>
+    </select>
+  <select id="queryList" resultMap="BaseResultMap">
+    SELECT ps.id, ps.price, ps.storeNumber, ps.amount, ps.product_id,ps.`depot_id`,
+    p.`id` p_id,p.`sn` p_sn,p.`name` p_name,p.`costPrice` p_costPrice,
+    p.`salePrice` p_salePrice,
+    d.`id` d_id,
+    d.`name` d_name
+    FROM `productstock` ps
+    JOIN `product` p ON ps.`product_id` = p.`id`
+    JOIN `depot` d ON d.`id` = ps.`depot_id`
+    <include refid="BaseSql"></include>
+    limit #{beginIndex},#{rows}
+  </select>
+  <select id="selectByProductIdAndDepotId" resultMap="BaseResultMap">
+    SELECT * FROM productstock WHERE product_id = #{productId} AND depot_id = #{depotId}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `productstock`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Productstock" useGeneratedKeys="true" keyProperty="id" >
+    insert into `productstock` (price, storeNumber, amount, product_id, depot_id)
+    values (#{price}, #{storenumber}, #{amount}, #{product.id}, #{depot.id})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Productstock" >
+    update `productstock`
+    set
+    storeNumber = #{storenumber},
+    amount = #{amount}
+    where id = #{id}
+  </update>
+  <update id="updateSellLaterStorenumberById">
+    update `productstock`
+    set storeNumber = #{storenumber},
+    amount = #{amount}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, price, storeNumber, amount, product_id, depot_id
+    from `productstock`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, price, storeNumber, amount, product_id, depot_id
+    from `productstock`
+  </select>
+  <select id="selectProductByProductIdAndNumber" resultMap="BaseResultMap">
+    select id, price, storeNumber, amount, product_id, depot_id
+    from `productstock`
+    WHERE product_id=#{ProductId} and storeNumber >= #{storeNumber} and depot_id =#{depotId}
+  </select>
+  <select id="selectStockByPidAndDid" resultType="cn.wolfcode.crm.domain.Productstock">
+    select *
+    from productstock
+    where product_id=#{pId} and depot_id=#{depotID}
+  </select>
+</mapper>

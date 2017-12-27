@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.OrderChartMapper">
+
+    <select id="orderChart" resultType="java.util.Map">
+        SELECT
+        ${groupBy} groupByName,
+        SUM(ob.`totalNumber`) totalNumber,
+        SUM(ob.`totalAmount`) totalAmount
+        FROM `orderbill` ob
+        JOIN `employee` e ON ob.`inputUser_id` = e.`id`
+        JOIN `product` p ON ob.`product_id` = p.`id`
+        JOIN `supplier` s ON ob.`supplier_id` = s.`id`
+        <include refid="orderChart_sql"></include>
+        GROUP BY
+        ${groupBy}
+    </select>
+
+
+    <sql id="orderChart_sql">
+        where ob.status = 1
+        <if test="beginDate!=null">
+            and ob.vdate>=#{beginDate}
+        </if>
+        <if test="endDate!=null">
+            and ob.vdate &lt;= #{endDate}
+        </if>
+        <if test="productName!=null and productName != ''">
+            and p.name like concat('%',#{productName},'%')
+        </if>
+        <if test="supplierId > 0">
+            and s.id=#{supplierId}
+        </if>
+    </sql>
+</mapper>

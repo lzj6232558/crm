@@ -1,0 +1,27 @@
+[
+  {
+    "id": 11,
+    "text": "销售报表",
+    "url": "/employee/view.do"
+  },
+  {
+    "id": 13,
+    "text": "充值报表",
+    "url": "/role/view.do"
+  },
+  {
+    "id": 13,
+    "text": "会员退卡报表",
+    "url": "/role/view.do"
+  },
+  {
+    "id": 13,
+    "text": "进货报表",
+    "url": "/role/view.do"
+  },
+  {
+    "id": 14,
+    "text": "退货报表",
+    "url": "/permission/view.do"
+  }
+]

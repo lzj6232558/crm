@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ChartOrderMapper">
+    <!--销售分析-->
+    <select id="selectGroupBy" resultType="map">
+        SELECT
+            ${groupBy} groupByName,
+            sum(sa.saleAmount) saleAmount,
+            sum(sa.saleAmount) - sum(sa.costAmount) subtotal
+        FROM sale_account sa
+            JOIN product p ON sa.product_id = p.id
+            JOIN vip v on sa.client_id  = v.id
+            JOIN vipcard vc on v.vipcard_id = vc.id
+            JOIN employee e ON sa.saleman_id = e.id
+        GROUP BY (${groupBy})
+    </select>
+    <!--总利润-->
+    <select id="selectSumProfit" resultType="java.math.BigDecimal">
+        SELECT
+            sum(sa.saleAmount) - sum(sa.costAmount)
+        FROM sale_account sa
+            JOIN product p ON sa.product_id = p.id
+            JOIN vip v on sa.client_id  = v.id
+            JOIN vipcard vc on v.vipcard_id = vc.id
+            JOIN employee e ON sa.saleman_id = e.id
+    </select>
+    <select id="saleChart" resultType="map">
+        SELECT
+            p.name  proName,
+            vc.name sellObject,
+            sa.costPrice costPrice,
+            sa.salePrice salePrice,
+            vc.discount discount,
+            sa.number buyNunber,
+            sa.saleAmount saleAmount ,
+            sa.saleAmount - (sa.costAmount) profit,
+            sa.vdate sellVdate
+        /*商品名称*/
+        FROM sale_account sa
+            JOIN product p ON sa.product_id = p.id
+            /*单号 */
+            /*消费对象*/
+            JOIN vip v ON sa.client_id = v.id
+            JOIN vipcard vc ON v.vipcard_id = vc.id
+        <include refid="sale_sql"/>
+    </select>
+
+    <sql id="sale_sql">
+        <where>
+            <if test="proId != null and proId != -1">
+                and p.id = #{proId}
+            </if>
+            <if test="vipId != null and vipId != -1">
+                and v.id = #{vipId}
+            </if>
+            <if test="consumeObjectId != null and consumeObjectId != -1">
+                and vc.id = #{consumeObjectId}
+            </if>
+            <if test="beginDate != null">
+                and sa.vdate >= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and sa.vdate &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+
+</mapper>

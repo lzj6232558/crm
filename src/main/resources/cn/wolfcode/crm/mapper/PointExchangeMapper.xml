@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.PointExchangeMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.PointExchange" >
+    <id column="id" property="id" />
+    <result column="number" property="number" />
+    <result column="inputTime" property="inputTime" />
+    <association property="vip"  javaType="cn.wolfcode.crm.domain.Vip" columnPrefix="v_">
+      <id column="id" property="id"/>
+      <result column="vip_number" property="vipNumber"/>
+      <result column="vip_name" property="vipName"/>
+    </association>
+    <association property="gift"  javaType="cn.wolfcode.crm.domain.Gift" columnPrefix="g_">
+      <id column="id" property="id"/>
+      <result column="name" property="name"/>
+      <result column="point" property="point"/>
+    </association>
+    <association property="inputUser"  javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="e_">
+      <id column="id" property="id"/>
+      <result column="username" property="username"/>
+    </association>
+  </resultMap>
+
+  <sql id="sql_conditions">
+    <where>
+      <if test="keyword != null and keyword !=''">
+        and (v.vip_number like concat('%',#{keyword},'%') or v.vip_name like concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+
+  <delete id="deleteByPrimaryKey" >
+    delete from `pointexchange`
+    where id = #{id}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into `pointexchange` (vip_id, gift_id, number, employee_id, inputTime)
+    values (#{vip.id}, #{gift.id}, #{number}, #{inputUser.id}, #{inputTime})
+  </insert>
+  <update id="updateByPrimaryKey" >
+    update `pointexchange`
+    set vip_id = #{vip.id},
+      gift_id = #{gift.id},
+      number = #{number},
+      employee_id = #{inputUser.id},
+      inputTime = #{inputTime}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, vip_id, gift_id, number, employee_id, inputTime
+    from `pointexchange`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+   select p.id,v.id v_id, v.vip_number v_vip_number, v.vip_name v_vip_name,g.id g_id,g.name g_name, e.username e_username, p.number, p.inputTime
+    from pointexchange p join vip v on p.vip_id = v.id join gift g on g.id = p.gift_id
+    join employee e on p.employee_id=e.id
+  </select>
+  <select id="queryForCount" resultType="int">
+    select count(p.id) from pointexchange p join vip v
+    <include refid="sql_conditions"/>
+    limit #{beginIndex},#{rows}
+  </select>
+  <select id="queryForList" resultMap="BaseResultMap">
+    select p.id,
+    v.id v_id,
+    v.vip_number v_vip_number,
+    v.vip_name v_vip_name,
+    g.id g_id,
+    g.name g_name,
+    g.point g_point,
+    g.sn g_sn,
+    e.username e_username,
+    p.number, p.inputTime
+    from pointexchange p left join vip v on p.vip_id = v.id
+    left join gift g on g.id = p.gift_id
+    left join employee e on p.employee_id=e.id
+    <include refid="sql_conditions"/>
+    limit #{beginIndex},#{rows}
+  </select>
+</mapper>

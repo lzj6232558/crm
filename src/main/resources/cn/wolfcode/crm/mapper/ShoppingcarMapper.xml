@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ShoppingcarMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Shoppingcar" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="number" property="number" />
+    <result column="img" property="img" />
+    <result column="price" property="price" />
+    <result column="pId" property="pId" />
+    <result column="shoppingnumber" property="shoppingnumber"></result>
+    <result column="tocalPrice" property="tocalPrice"></result>
+    <result column="depot_id" property="depotId"></result>
+    <result column="status" property="status"></result>
+    <result column="vipId" property="vipId"></result>
+    <result column="shoppingstatus" property="shoppingstatus"></result>
+  </resultMap>
+
+  <insert id="insert">
+    insert into shoppingcar(name,number,img,price,pId,tocalPrice,depot_id)values(#{name},#{number},#{img},#{price},#{pId},#{tocalPrice},#{depotId})
+  </insert>
+
+  <insert id="insertBlus">
+    insert into shoppingcar(name,number,img,price,pId,tocalPrice,depot_id,vipId)values(#{name},#{number},#{img},#{price},#{pId},#{tocalPrice},#{depotId},#{vipId})
+  </insert>
+
+  <select id="selletAll" resultMap="BaseResultMap">
+    select *
+    from shoppingcar where status =1
+  </select>
+
+  <!--收银界面所有的商品-->
+  <select id="productAll" resultMap="BaseResultMap">
+    select p.name name ,p.id pId,stock.storeNumber number,p.imagePath img,p.salePrice price,stock.depot_id depotId
+    from   productstock stock join  product p
+    on stock.product_id=p.id
+  </select>
+
+  <!--根据条件分类查询商品-->
+  <select id="productGroubByName" resultMap="BaseResultMap">
+    select p.name name ,p.id pId,stock.storeNumber number,p.imagePath img,p.salePrice price,stock.depot_id depotId
+    from productstock stock
+    JOIN  product p
+    on stock.product_id=p.id
+    JOIN  depot d
+    on stock .depot_id=d.id
+    JOIN   producttype type
+    on p.id = type.product_id
+    where type.id=#{id}
+  </select>
+
+  <update id="update">
+    update  shoppingcar set shoppingnumber=#{shoppingnumber}, tocalPrice=#{tocalPrice} where pId=#{pId}
+  </update>
+
+
+  <select id="selletAllId" resultType="Long">
+    select pId from shoppingcar
+  </select>
+
+  <select id="selectTocalPrice" resultType="decimal">
+    select tocalPrice from shoppingcar where pId=#{pid}
+  </select>
+
+  <select id="selectNumber" resultType="Long">
+    select shoppingnumber from shoppingcar where pId=#{pid}
+  </select>
+
+  <delete id="deleteById">
+    delete from shoppingcar where name=#{name}
+  </delete>
+
+  <!--清除结账完毕的商品-->
+  <delete id="delete">
+    delete from shoppingcar where (status=1 and shoppingstatus=2) or shoppingstatus=4
+  </delete>
+
+  <!--总金额-->
+  <select id="selectTocl" resultType="Decimal">
+    select sum(tocalPrice) from shoppingcar where status=1 and vipId=#{id}
+  </select>
+
+  <!--挂单-->
+  <update id="updataSta">
+    update  shoppingcar set status =0
+  </update>
+
+  <!--取单-->
+  <update id="getselectmenoy">
+    update  shoppingcar set status =1
+  </update>
+
+  <!--存会员id-->
+  <update id="insertVipNumber">
+      update shoppingcar    set vipId =#{id} where vipId =1
+  </update>
+
+  <!--查询有没有选中会员-->
+  <select id="selectVipNumber" resultMap="BaseResultMap">
+    select * from shoppingcar where vipId =1
+  </select>
+
+  <!--查看所有货品状态-->
+  <select id="selectAllStatis" resultMap="BaseResultMap">
+    SELECT * from shoppingcar where status =1
+  </select>
+
+  <!--一旦添加商品就改变状态为可以结账状态-->
+  <update id="updateshoppingstatus">
+    update shoppingcar set shoppingstatus=3
+  </update>
+
+  <!--结账成功-->
+  <update id="updateshopingByVipNumber">
+    update shoppingcar set shoppingstatus=4 where vipId=#{id}
+  </update>
+
+  <!--查询当前会员的单-->
+  <select id="selectVipProduct" resultMap="BaseResultMap">
+    SELECT * from shoppingcar where vipId=#{id} and status=0
+  </select>
+
+  <!--把挂的单删除-->
+  <delete id="deleteselect">
+    delete from shoppingcar  where vipId=#{id} and status=0
+  </delete>
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.OrderbillitemMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Orderbillitem" >
+    <id column="id" property="id" />
+    <result column="costPrice" property="costprice" />
+    <result column="number" property="number" />
+    <result column="amount" property="amount" />
+    <result column="remark" property="remark" />
+    <association property="product" javaType="Product"
+                 columnPrefix="p_">
+      <id column="id" property="id"></id>
+      <result column="name" property="name"></result>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `orderbillitem`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Orderbillitem" useGeneratedKeys="true" keyProperty="id" >
+    insert into `orderbillitem` (costPrice, number, amount, remark, product_id, bill_id)
+    values (#{costprice}, #{number}, #{amount}, #{remark}, #{product.id}, #{bill.id})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Orderbillitem" >
+    update `orderbillitem`
+    set costPrice = #{costprice},
+      number = #{number},
+      amount = #{amount},
+      remark = #{remark},
+      product_id = #{product.id},
+      bill_id = #{bill.id}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, costPrice, number, amount, remark, product_id, bill_id
+    from `orderbillitem`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, costPrice, number, amount, remark, product_id, bill_id
+    from `orderbillitem`
+  </select>
+  <select id="selectByBillId" resultType="cn.wolfcode.crm.domain.Orderbillitem">
+    SELECT item.id, item.costPrice, item.number,
+    item.amount, item.remark,
+    item.product_id, item.bill_id,p.id p_id,p.name p_name
+    FROM `orderbillitem` item
+    JOIN `product` p ON p.`id` = item.product_id
+    WHERE item.`bill_id` = #{billId}
+  </select>
+</mapper>

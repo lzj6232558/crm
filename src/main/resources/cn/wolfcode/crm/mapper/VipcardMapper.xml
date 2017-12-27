@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.VipcardMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Vipcard" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="discount" property="discount" />
+    <result column="minimum" property="minimum" />
+    <result column="maximum" property="maximum" />
+    <result column="state" property="state"/>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `vipcard`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Vipcard" useGeneratedKeys="true" keyProperty="id" >
+    insert into `vipcard` (name, discount, minimum, maximum,state)
+    values (#{name}, #{discount}, #{minimum}, #{maximum},#{state})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Vipcard" >
+    update `vipcard`
+    set name = #{name},
+      discount = #{discount},
+      minimum = #{minimum},
+      maximum = #{maximum}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, discount, minimum, maximum,state
+    from `vipcard`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, discount, minimum, maximum,state
+    from `vipcard`
+  </select>
+    <select id="selectCardByPoint" resultType="cn.wolfcode.crm.domain.Vipcard">
+        select id, name, discount, minimum, maximum,state
+        from `vipcard`
+        where minimum &lt;= #{totalpoint} and maximum >=#{totalpoint}
+    </select>
+
+    <update id="changeState">
+    UPDATE vipcard SET state=state^1 WHERE id=#{id}
+  </update>
+
+</mapper>

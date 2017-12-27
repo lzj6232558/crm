@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.SystemLogMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.SystemLog">
+        <id column="id" property="id" />
+        <result column="optime" property="opTime" />
+        <result column="opip" property="opIp" />
+        <result column="function" property="function" />
+        <result column="params" property="params" />
+        <association column="opuser_id"
+                     property="opUser"
+                     javaType="cn.wolfcode.crm.domain.Employee"
+                     select="cn.wolfcode.crm.mapper.EmployeeMapper.selectByPrimaryKey" />
+    </resultMap>
+    <insert id="insert" keyProperty="id" parameterType="cn.wolfcode.crm.domain.SystemLog" useGeneratedKeys="true">
+        INSERT INTO `system_log` (opuser_id, optime, opip, function, params)
+        VALUES (#{opUser.id}, now(), #{opIp}, #{function}, #{params})
+    </insert>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+            id,
+            opuser_id,
+            optime,
+            opip,
+            function,
+            params
+        FROM `system_log`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            opuser_id,
+            optime,
+            opip,
+            function,
+            params
+        FROM `system_log`
+    </select>
+</mapper>

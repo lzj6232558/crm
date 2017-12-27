@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.DisburseDetailMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.DisburseDetail" >
+    <id column="id" property="id" />
+    <result column="detail" property="detail"/>
+    <result column="money" property="money"/>
+    <result column="disburse_time" property="disburseTime"/>
+    <association property="bigClassify" columnPrefix="big_" javaType="cn.wolfcode.crm.domain.DisburseBigClassify">
+      <id column="id" property="id" />
+      <result column="classify" property="classify" />
+    </association>
+    <association property="littleClassify" columnPrefix="little_" javaType="cn.wolfcode.crm.domain.DisburseLittleClassify">
+      <id column="id" property="id" />
+      <result column="classify" property="classify" />
+    </association>
+    <association property="disburseUser" columnPrefix="user_" javaType="cn.wolfcode.crm.domain.Employee">
+      <id column="id" property="id" />
+      <result column="username" property="username" />
+    </association>
+  </resultMap>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.DisburseDetail" useGeneratedKeys="true" keyProperty="id" >
+    insert into `disburse_detail` (detail,money,disburse_time,little_cassify_id,disburseUser_id)
+    values (#{detail},#{money},#{disburseTime},#{littleClassify.id},#{disburseUser.id})
+  </insert>
+  <update id="updateByPrimaryKey">
+    update disburse_detail
+    set detail = #{detail},
+        disburse_time = #{disburseTime},
+        money = #{money},
+        little_cassify_id = #{littleClassify.id},
+        disburseUser_id = #{disburseUser.id}
+    where id = #{id}
+  </update>
+  <delete id="deleteByPrimaryKey">
+    delete from disburse_detail where id = #{id}
+  </delete>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select detail.id, detail.detail,detail.money,detail.disburse_time,
+      little.id little_id, little.classify little_classify,
+      big.id big_id,big.classify big_classify,
+      user.id user_id, user.username user_username
+    from `disburse_detail` detail
+      LEFT JOIN disburse_little_classify little on detail.little_cassify_id = little.id
+      LEFT JOIN disburse_classify_relation re on little.id = re.little_id
+      LEFT JOIN disburse_big_classify big on re.big_id = big.id
+      LEFT JOIN employee user on detail.disburseUser_id = user.id
+  </select>
+    <select id="selectGroupBy" resultType="java.util.Map">
+      select ${groupBy} groupByName,
+        sum(detail.money) totalAmount
+      from `disburse_detail` detail
+        LEFT JOIN disburse_little_classify little on detail.little_cassify_id = little.id
+        LEFT JOIN disburse_classify_relation re on little.id = re.little_id
+        LEFT JOIN disburse_big_classify big on re.big_id = big.id
+        LEFT JOIN employee user on detail.disburseUser_id = user.id
+      GROUP BY (${groupBy})
+    </select>
+</mapper>

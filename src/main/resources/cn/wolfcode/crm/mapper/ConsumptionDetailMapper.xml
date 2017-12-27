@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ConsumptionDetailMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.ConsumptionDetail" >
+    <id column="id" property="id" />
+    <result column="number" property="number" />
+    <result column="costprice" property="costprice" />
+    <result column="saleprice" property="saleprice" />
+    <result column="amountMoney" property="amountmoney" />
+  </resultMap>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.ConsumptionDetail" useGeneratedKeys="true" keyProperty="id" >
+    insert into `consumption_detail` (number, product_id, costprice, saleprice, amountMoney, record_id
+      )
+    values (#{number}, #{product.id}, #{costprice}, #{saleprice}, #{amountmoney}, #{recordId}
+      )
+  </insert>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, number, product_id, costprice, saleprice, amountMoney, record_id
+    from `consumption_detail`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, number, product_id, costprice, saleprice, amountMoney, record_id
+    from `consumption_detail`
+  </select>
+</mapper>

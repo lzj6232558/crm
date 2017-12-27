@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.DisburseBigClassifyMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.DisburseBigClassify" >
+    <id column="id" property="id" />
+    <result column="classify" property="classify" />
+    <collection property="littleList" columnPrefix="little_" ofType="cn.wolfcode.crm.domain.DisburseLittleClassify">
+      <id column="id" property="id" />
+      <result column="classify" property="classify" />
+    </collection>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `disburse_big_classify`
+    where id = #{id}
+  </delete>
+  <delete id="deleteRelationByBigId">
+    delete from disburse_classify_relation
+    where big_id = #{bigId}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.DisburseBigClassify" useGeneratedKeys="true" keyProperty="id" >
+    insert into `disburse_big_classify` (classify)
+    values (#{classify})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.DisburseBigClassify" >
+    update `disburse_big_classify`
+    set classify = #{classify}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select big.id, big.classify,
+      little.id little_id, little.classify little_classify
+    from `disburse_big_classify` big
+      JOIN disburse_classify_relation re on re.big_id = id
+      LEFT JOIN disburse_little_classify little on re.little_id = little.id
+    where big.id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, classify
+    from `disburse_big_classify`
+  </select>
+</mapper>

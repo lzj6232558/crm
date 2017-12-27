@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.CheckProductMapper">
+    <resultMap id="BaseResultMap" type="CheckProduct">
+        <id column="id" property="id"></id>
+        <result column="checkTime" property="checkTime"></result>
+        <result property="storeNumber" column="storeNumber"></result>
+        <association property="product" javaType="Product" columnPrefix="p_">
+            <id column="id" property="id"></id>
+            <result column="sn" property="sn"></result>
+            <result column="name" property="name"></result>
+            <result column="costPrice" property="costprice"></result>
+            <result column="salePrice" property="saleprice"></result>
+        </association>
+        <association property="inputuser" javaType="Employee" columnPrefix="e_">
+            <id property="id" column="id"></id>
+            <result property="username" column="username"></result>
+        </association>
+    </resultMap>
+
+    <sql id="BaseSql">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (p.`name` like concat('%',#{keyword},'%')
+                or p.`sn` like concat('%',#{keyword},'%'))
+            </if>
+        </where>
+    </sql>
+    <update id="update">
+        update checkproduct
+        set
+        checkTime = now(),
+        inputuser_id = #{inputuser.id}
+        where id = #{id}
+    </update>
+    <update id="adjust">
+        update checkproduct set storeNumber = #{newNumber} where id = #{id}
+    </update>
+    <select id="checkproduct" resultMap="BaseResultMap">
+      SELECT p.id p_id,p.`sn` p_sn,p.`name` p_name,p.`costPrice` p_costprice,
+        p.`salePrice` p_salePrice,cp.`storeNumber`,
+        cp.`id`,cp.`checkTime`,
+        e.id e_id,
+        e.`username` e_username
+        FROM `productstock` ps
+        JOIN `product` p ON p.`id` = ps.`product_id`
+        JOIN `checkproduct` cp ON cp.`product_id` = ps.`product_id`
+        LEFT JOIN `employee` e ON e.`id` = cp.`inputuser_id`
+        <include refid="BaseSql"></include>
+        GROUP BY ps.`product_id`;
+    </select>
+    <select id="selectByPrimaryKey" resultType="cn.wolfcode.crm.domain.CheckProduct">
+        select * from checkproduct where id =#{id}
+    </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(cp.`id`)
+        FROM `productstock` ps
+        JOIN `product` p ON p.`id` = ps.`product_id`
+        JOIN `checkproduct` cp ON cp.`product_id` = ps.`product_id`
+        LEFT JOIN `employee` e ON e.`id` = cp.`inputuser_id`
+        <include refid="BaseSql"></include>
+    </select>
+    <!--<select id="selectDepotTotalNumber" resultMap="BaseResultMap">
+        SELECT p.id p_id,p.`sn` p_sn,p.`name` p_name,p.`costPrice` p_costprice,
+        p.`salePrice` p_salePrice,SUM(ps.`storeNumber`) storeNumber,
+        cp.`id`,cp.`checkTime`,
+        e.id e_id,
+        e.`username` e_username
+        FROM `productstock` ps
+        JOIN `product` p ON p.`id` = ps.`product_id`
+        JOIN `checkproduct` cp ON cp.`product_id` = ps.`product_id`
+        LEFT JOIN `employee` e ON e.`id` = cp.`inputuser_id`
+        GROUP BY ps.`product_id`;
+    </select>-->
+</mapper>

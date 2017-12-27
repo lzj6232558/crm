@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.RechargeRecordMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.RechargeRecord" >
+    <id column="id" property="id" />
+    <result column="vipNumber" property="vipNumber" />
+    <result column="vipName" property="vipName" />
+    <result column="currentInMoney" property="currentInMoney" />
+    <result column="vipAmountMoney" property="vipAmountMoney" />
+    <result column="inputTime" property="inputTime" />
+    <result column="postscript" property="postscript"/>
+    <result column="vipCurrentMoney" property="vipCurrentMoney"/>
+    <association  property="inputUser" javaType="cn.wolfcode.crm.domain.Employee">
+      <id column="e_id" property="id"/>
+      <result column="e_username" property="username"/>
+    </association>
+  </resultMap>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.RechargeRecord" useGeneratedKeys="true" keyProperty="id" >
+    insert into `recharge_record` (vipNumber, vipName, currentInMoney, vipAmountMoney, inputTime,
+      inputUser_id ,postscript,vipCurrentMoney)
+    values (#{vipNumber}, #{vipName}, #{currentInMoney}, #{vipAmountMoney},now(),
+      #{inputUser.id},#{postscript},#{vipCurrentMoney})
+  </insert>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, vipNumber, vipName, currentInMoney, vipAmountMoney, inputTime, inputUser_id,postscript,vipCurrentMoney
+    from `recharge_record`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, vipNumber, vipName, currentInMoney, vipAmountMoney, inputTime, inputUser_id,postscript,vipCurrentMoney
+    from `recharge_record`
+  </select>
+  <select id="selectRechargeRecordByVipNumber" resultMap="BaseResultMap">
+    SELECT rr.id, rr.vipNumber, rr.vipName, rr.currentInMoney, rr.vipAmountMoney, rr.inputTime,
+      rr.inputUser_id,rr.postscript,rr.vipCurrentMoney,e.id e_id,e.username e_username
+    FROM recharge_record rr LEFT JOIN employee e on rr.inputUser_id = e.id  WHERE rr.vipNumber = #{vipNumber}
+  </select>
+    
+</mapper>

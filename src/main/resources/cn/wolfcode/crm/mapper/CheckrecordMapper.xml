@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.CheckrecordMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Checkrecord" >
+    <id column="id" property="id" />
+    <result column="storeNumber" property="storeNumber" />
+    <result column="newNumber" property="newNumber" />
+    <result column="inputtime" property="inputtime" />
+    <result column="remark" property="remark" />
+    <association property="inputter" javaType="Employee" columnPrefix="e_">
+      <id column="id" property="id"></id>
+      <result column="username" property="username"></result>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `checkrecord`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Checkrecord" useGeneratedKeys="true" keyProperty="id" >
+    insert into `checkrecord` (storeNumber, newNumber, inputter_id, inputtime, remark)
+    values (#{storeNumber}, #{newNumber}, #{inputter.id}, now(), #{remark})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Checkrecord" >
+    update `checkrecord`
+    set storeNumber = #{storeNumber},
+      newNumber = #{newNumber},
+      inputter_id = #{inputter.id},
+      inputtime = now(),
+      remark = #{remark}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, storeNumber, newNumber, inputter_id, inputtime, remark
+    from `checkrecord`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    SELECT cr.id, cr.storeNumber, cr.newNumber, cr.inputter_id, cr.inputtime, cr.remark,
+    e.id e_id,e.`username` e_username
+    FROM `checkrecord` cr
+    JOIN `employee` e ON e.`id` = cr.`inputter_id`
+  </select>
+</mapper>
